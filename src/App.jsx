@@ -673,28 +673,45 @@ export default function App() {
                 ✓ ACCESS GRANTED — CHECK YOUR EMAIL
               </div>
             ) : (
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && email && setSubscribed(true)}
-                  placeholder="your@email.com"
-                  style={{
-                    flex: 1, background: "#030508",
-                    border: "1px solid #1a2030", borderRadius: "4px",
-                    padding: "10px 14px", fontFamily: "'Space Mono', monospace",
-                    fontSize: "12px", color: "#8899bb", outline: "none"
-                  }}
-                />
-                <button onClick={() => email && setSubscribed(true)} style={{
-                  background: "linear-gradient(135deg, #00b4ff, #00ff90)",
-                  border: "none", color: "#030508",
-                  padding: "10px 20px", borderRadius: "4px",
-                  fontFamily: "'Space Mono', monospace", fontSize: "11px",
-                  fontWeight: "700", cursor: "pointer", whiteSpace: "nowrap"
-                }}>
-                  GET ACCESS
-                </button>
+              <div>
+                {/* Hidden iframe to catch Mailchimp redirect without leaving page */}
+                <iframe name="mc_embed_iframe" style={{ display: "none" }} title="mc" />
+                <form
+                  action="https://gmail.us2.list-manage.com/subscribe/post?u=13f674f36946617471a726a61&id=d56b3d028a&f_id=00ccc7e1f0"
+                  method="post"
+                  target="mc_embed_iframe"
+                  onSubmit={e => { if (email) { setSubscribed(true); } else { e.preventDefault(); } }}
+                  style={{ display: "flex", gap: "8px" }}
+                >
+                  <input
+                    type="email"
+                    name="EMAIL"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && !email && e.preventDefault()}
+                    placeholder="your@email.com"
+                    required
+                    style={{
+                      flex: 1, background: "#030508",
+                      border: "1px solid #1a2030", borderRadius: "4px",
+                      padding: "10px 14px", fontFamily: "'Space Mono', monospace",
+                      fontSize: "12px", color: "#8899bb", outline: "none"
+                    }}
+                  />
+                  {/* Mailchimp bot protection field - do not remove */}
+                  <div style={{ position: "absolute", left: "-5000px" }} aria-hidden="true">
+                    <input type="text" name="b_13f674f36946617471a726a61_d56b3d028a" tabIndex="-1" defaultValue="" readOnly />
+                  </div>
+                  <button type="submit" style={{
+                    background: "linear-gradient(135deg, #00b4ff, #00ff90)",
+                    border: "none", color: "#030508",
+                    padding: "10px 20px", borderRadius: "4px",
+                    fontFamily: "'Space Mono', monospace", fontSize: "11px",
+                    fontWeight: "700", cursor: "pointer", whiteSpace: "nowrap"
+                  }}>
+                    GET ACCESS
+                  </button>
+                </form>
               </div>
             )}
           </div>
