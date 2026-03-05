@@ -200,6 +200,23 @@ function PromptCard({ prompt, onClick }) {
   );
 }
 
+function SaveButton() {
+  const [saved, setSaved] = useState(false);
+  return (
+    <button onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000); }} style={{
+      padding: "12px 20px",
+      background: saved ? "#00ff9015" : "none",
+      border: `1px solid ${saved ? "#00ff90" : "#2a3545"}`,
+      color: saved ? "#00ff90" : "#6677aa",
+      borderRadius: "6px", fontFamily: "'Space Mono', monospace",
+      fontSize: "11px", cursor: "pointer", transition: "all 0.2s",
+      whiteSpace: "nowrap"
+    }}>
+      {saved ? "✓ SAVED" : "♡ SAVE"}
+    </button>
+  );
+}
+
 function Modal({ prompt, onClose }) {
   const [copied, setCopied] = useState(false);
   if (!prompt) return null;
@@ -269,15 +286,7 @@ function Modal({ prompt, onClose }) {
           }}>
             {copied ? "✓ COPIED" : "◻ COPY PROMPT"}
           </button>
-          <button style={{
-            padding: "12px 20px",
-            background: "none", border: "1px solid #1e2535",
-            color: "#445", borderRadius: "6px",
-            fontFamily: "'Space Mono', monospace", fontSize: "11px",
-            cursor: "pointer"
-          }}>
-            ♡ SAVE
-          </button>
+          <SaveButton />
         </div>
       </div>
     </div>
@@ -368,9 +377,9 @@ export default function App() {
             <TerminalBadge text={`${counter.toLocaleString()} prompts used`} />
           </div>
           <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-            <span style={{ fontSize: "12px", color: "#445", cursor: "pointer" }}>Docs</span>
-            <span style={{ fontSize: "12px", color: "#445", cursor: "pointer" }}>API</span>
-            <button style={{
+            <span onClick={() => document.getElementById("library").scrollIntoView({behavior:"smooth"})} style={{ fontSize: "12px", color: "#6677aa", cursor: "pointer" }}>Library</span>
+            <span onClick={() => document.getElementById("pricing").scrollIntoView({behavior:"smooth"})} style={{ fontSize: "12px", color: "#6677aa", cursor: "pointer" }}>Pricing</span>
+            <button onClick={() => document.getElementById("pricing").scrollIntoView({behavior:"smooth"})} style={{
               background: "linear-gradient(135deg, #00b4ff, #00ff90)",
               border: "none", color: "#030508",
               padding: "7px 16px", borderRadius: "4px",
@@ -424,6 +433,23 @@ export default function App() {
             Stop writing prompts from scratch. Access a curated library of expert-crafted prompts for legal, finance, marketing, engineering, and more.
           </p>
 
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", marginBottom: "40px" }}>
+            <button onClick={() => document.getElementById("library").scrollIntoView({behavior:"smooth"})} style={{
+              background: "linear-gradient(135deg, #00b4ff, #00ff90)",
+              border: "none", color: "#030508",
+              padding: "12px 28px", borderRadius: "4px",
+              fontFamily: "'Space Mono', monospace", fontSize: "12px",
+              fontWeight: "700", cursor: "pointer", letterSpacing: "0.05em"
+            }}>BROWSE PROMPTS →</button>
+            <button onClick={() => document.getElementById("pricing").scrollIntoView({behavior:"smooth"})} style={{
+              background: "transparent",
+              border: "1px solid #2a3545", color: "#8899bb",
+              padding: "12px 28px", borderRadius: "4px",
+              fontFamily: "'Space Mono', monospace", fontSize: "12px",
+              cursor: "pointer", letterSpacing: "0.05em"
+            }}>VIEW PRICING</button>
+          </div>
+
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             {[
               { label: "200+", sub: "Prompts" },
@@ -444,7 +470,7 @@ export default function App() {
         </div>
 
         {/* LIBRARY SECTION */}
-        <div style={{
+        <div id="library" style={{
           maxWidth: "1100px", margin: "0 auto",
           padding: "0 32px 80px"
         }}>
@@ -489,18 +515,23 @@ export default function App() {
               ))}
             </div>
             <div style={{ display: "flex", gap: "6px", marginLeft: "auto" }}>
-              {tiers.map(t => (
-                <button key={t} onClick={() => setActiveTier(t)} style={{
-                  background: activeTier === t ? "#ffffff08" : "transparent",
-                  border: `1px solid ${activeTier === t ? "#334" : "#1a2030"}`,
-                  color: activeTier === t ? "#e8eaf0" : "#334",
-                  padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
-                  fontFamily: "'Space Mono', monospace", fontSize: "10px",
-                  textTransform: "uppercase"
-                }}>
-                  {t}
-                </button>
-              ))}
+              {tiers.map(t => {
+                const tc = t === "free" ? "#00ff90" : t === "pro" ? "#00b4ff" : t === "enterprise" ? "#ff6b35" : "#e8eaf0";
+                const isActive = activeTier === t;
+                return (
+                  <button key={t} onClick={() => setActiveTier(t)} style={{
+                    background: isActive ? `${tc}18` : "transparent",
+                    border: `1px solid ${isActive ? tc : "#2a3545"}`,
+                    color: isActive ? tc : "#556677",
+                    padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
+                    fontFamily: "'Space Mono', monospace", fontSize: "10px",
+                    textTransform: "uppercase", transition: "all 0.15s",
+                    fontWeight: isActive ? "700" : "400"
+                  }}>
+                    {t}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -523,7 +554,7 @@ export default function App() {
         </div>
 
         {/* PRICING */}
-        <div style={{
+        <div id="pricing" style={{
           borderTop: "1px solid #0e1520",
           padding: "80px 32px",
           maxWidth: "1000px", margin: "0 auto"
@@ -586,17 +617,25 @@ export default function App() {
                     </div>
                   ))}
                 </div>
-                <button style={{
-                  width: "100%", padding: "12px",
-                  background: plan.highlight ? `linear-gradient(135deg, #00b4ff, #00ff90)` : "transparent",
-                  border: plan.highlight ? "none" : `1px solid ${plan.color}`,
-                  color: plan.highlight ? "#030508" : plan.color,
-                  borderRadius: "4px", cursor: "pointer",
-                  fontFamily: "'Space Mono', monospace", fontSize: "12px",
-                  fontWeight: "700", letterSpacing: "0.05em"
-                }}>
+                <a
+                  href={
+                    plan.name === "PRO" ? "https://ogoina4.gumroad.com/l/qvcmgg" :
+                    plan.name === "ENTERPRISE" ? "mailto:hello@promptvault.com?subject=Enterprise%20Inquiry" : "#"
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block", width: "100%", padding: "12px",
+                    background: plan.highlight ? `linear-gradient(135deg, #00b4ff, #00ff90)` : "transparent",
+                    border: plan.highlight ? "none" : `1px solid ${plan.color}`,
+                    color: plan.highlight ? "#030508" : plan.color,
+                    borderRadius: "4px", cursor: "pointer",
+                    fontFamily: "'Space Mono', monospace", fontSize: "12px",
+                    fontWeight: "700", letterSpacing: "0.05em",
+                    textAlign: "center", textDecoration: "none", boxSizing: "border-box"
+                  }}>
                   {plan.cta}
-                </button>
+                </a>
               </div>
             ))}
           </div>
@@ -638,6 +677,7 @@ export default function App() {
                 <input
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && email && setSubscribed(true)}
                   placeholder="your@email.com"
                   style={{
                     flex: 1, background: "#030508",
