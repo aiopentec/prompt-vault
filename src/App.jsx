@@ -620,7 +620,7 @@ export default function App() {
                 <a
                   href={
                     plan.name === "PRO" ? "https://ogoina4.gumroad.com/l/qvcmgg" :
-                    plan.name === "ENTERPRISE" ? "mailto:hello@promptvault.com?subject=Enterprise%20Inquiry" : "#"
+                    plan.name === "ENTERPRISE" ? "https://ogoina4.gumroad.com/l/gveybd" : "#"
                   }
                   target="_blank"
                   rel="noopener noreferrer"
