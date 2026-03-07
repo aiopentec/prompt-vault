@@ -132,15 +132,20 @@ const tierColors = {
 };
 const categoryIcons = { Legal:"⚖", Research:"◎", Finance:"◈", Sales:"◆", Engineering:"⬡", Marketing:"◉", HR:"◫", Productivity:"◧", Product:"◩", All:"◌" };
 const TIER_RANK = { free:0, pro:1, enterprise:2 };
-// Secret unlock codes — set these as the content inside your Gumroad product pages
-const UNLOCK_CODES = {
-  "PV-PRO-2026": "pro",
-  "PV-ENT-2026": "enterprise",
-};
+const GUMROAD_PRODUCTS = { pro: "chzRZ6SFQGnMvtSjPmcGhw==", enterprise: "Us5Cg7acnoXQb3yXC1b0xg==" };
 
 async function verifyLicenseKey(key) {
-  const tier = UNLOCK_CODES[key.trim().toUpperCase()];
-  if (tier) return { valid: true, tier };
+  for (const [tier, productId] of Object.entries(GUMROAD_PRODUCTS)) {
+    try {
+      const res = await fetch("https://api.gumroad.com/v2/licenses/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `product_id=${productId}&license_key=${encodeURIComponent(key)}`,
+      });
+      const data = await res.json();
+      if (data.success) return { valid: true, tier };
+    } catch(_) {}
+  }
   return { valid: false };
 }
 
@@ -223,9 +228,9 @@ function LicenseModal({ onClose, onVerified }) {
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"2px", background:"linear-gradient(90deg,transparent,#00b4ff,#00ff90,transparent)", borderRadius:"12px 12px 0 0" }} />
         <div style={{ fontSize:"11px", color:"#00b4ff", fontFamily:"'Space Mono',monospace", letterSpacing:"0.2em", marginBottom:"12px" }}>// UNLOCK LIBRARY</div>
         <div style={{ fontFamily:"'Syne',sans-serif", fontSize:"20px", fontWeight:"900", color:"#e8eaf0", marginBottom:"8px" }}>Enter your unlock code</div>
-        <div style={{ fontSize:"12px", color:"#556", marginBottom:"24px", lineHeight:1.6 }}>After subscribing on Gumroad, your unlock code is shown on the confirmation page and sent to your email.</div>
-        <input value={key} onChange={e => { setKey(e.target.value); setStatus("idle"); }} onKeyDown={e => e.key==="Enter" && handleVerify()} placeholder="PV-PRO-2026 or PV-ENT-2026" style={{ width:"100%", background:"#030508", border:`1px solid ${status==="error"?"#ff4444":"#1a2030"}`, borderRadius:"4px", padding:"12px 14px", fontFamily:"'Space Mono',monospace", fontSize:"12px", color:"#8899bb", outline:"none", boxSizing:"border-box", marginBottom:"12px" }} />
-        {status==="error" && <div style={{ fontSize:"11px", color:"#ff4444", fontFamily:"'Space Mono',monospace", marginBottom:"12px" }}>✗ Invalid code — check your Gumroad confirmation email</div>}
+        <div style={{ fontSize:"12px", color:"#556", marginBottom:"24px", lineHeight:1.6 }}>After subscribing on Gumroad, you'll receive a unique license key by email. Enter it here to unlock your prompts.</div>
+        <input value={key} onChange={e => { setKey(e.target.value); setStatus("idle"); }} onKeyDown={e => e.key==="Enter" && handleVerify()} placeholder="Enter your license key" style={{ width:"100%", background:"#030508", border:`1px solid ${status==="error"?"#ff4444":"#1a2030"}`, borderRadius:"4px", padding:"12px 14px", fontFamily:"'Space Mono',monospace", fontSize:"12px", color:"#8899bb", outline:"none", boxSizing:"border-box", marginBottom:"12px" }} />
+        {status==="error" && <div style={{ fontSize:"11px", color:"#ff4444", fontFamily:"'Space Mono',monospace", marginBottom:"12px" }}>✗ Invalid key — check your Gumroad receipt email</div>}
         <div style={{ display:"flex", gap:"10px" }}>
           <button onClick={handleVerify} disabled={status==="loading"} style={{ flex:1, background:"linear-gradient(135deg,#00b4ff,#00ff90)", border:"none", color:"#030508", padding:"12px", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"12px", fontWeight:"700", cursor:"pointer" }}>{status==="loading"?"VERIFYING...":"UNLOCK ACCESS →"}</button>
           <button onClick={onClose} style={{ padding:"12px 16px", background:"none", border:"1px solid #1e2535", color:"#445", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"11px", cursor:"pointer" }}>CANCEL</button>
