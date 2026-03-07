@@ -132,20 +132,18 @@ const tierColors = {
 };
 const categoryIcons = { Legal:"⚖", Research:"◎", Finance:"◈", Sales:"◆", Engineering:"⬡", Marketing:"◉", HR:"◫", Productivity:"◧", Product:"◩", All:"◌" };
 const TIER_RANK = { free:0, pro:1, enterprise:2 };
-const GUMROAD_PRODUCTS = { pro: "chzRZ6SFQGnMvtSjPmcGhw==", enterprise: "Us5Cg7acnoXQb3yXC1b0xg==" };
+const WORKER_URL = "https://promptvault-license.aibiztec.workers.dev/";
 
 async function verifyLicenseKey(key) {
-  for (const [tier, productId] of Object.entries(GUMROAD_PRODUCTS)) {
-    try {
-      const res = await fetch("https://api.gumroad.com/v2/licenses/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `product_id=${productId}&license_key=${encodeURIComponent(key)}`,
-      });
-      const data = await res.json();
-      if (data.success) return { valid: true, tier };
-    } catch(_) {}
-  }
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ license_key: key }),
+    });
+    const data = await res.json();
+    if (data.valid) return { valid: true, tier: data.tier };
+  } catch(_) {}
   return { valid: false };
 }
 
