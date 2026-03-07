@@ -132,17 +132,16 @@ const tierColors = {
 };
 const categoryIcons = { Legal:"⚖", Research:"◎", Finance:"◈", Sales:"◆", Engineering:"⬡", Marketing:"◉", HR:"◫", Productivity:"◧", Product:"◩", All:"◌" };
 const TIER_RANK = { free:0, pro:1, enterprise:2 };
-const GUMROAD_PRODUCTS = { pro:"qvcmgg", enterprise:"gveybd" };
+// Secret unlock codes — set these as the content inside your Gumroad product pages
+const UNLOCK_CODES = {
+  "PV-PRO-2026": "pro",
+  "PV-ENT-2026": "enterprise",
+};
 
 async function verifyLicenseKey(key) {
-  for (const [tier, productId] of Object.entries(GUMROAD_PRODUCTS)) {
-    try {
-      const res = await fetch("https://api.gumroad.com/v2/licenses/verify", { method:"POST", headers:{ "Content-Type":"application/x-www-form-urlencoded" }, body:`product_id=${productId}&license_key=${encodeURIComponent(key)}` });
-      const data = await res.json();
-      if (data.success) return { valid:true, tier };
-    } catch(_) {}
-  }
-  return { valid:false };
+  const tier = UNLOCK_CODES[key.trim().toUpperCase()];
+  if (tier) return { valid: true, tier };
+  return { valid: false };
 }
 
 function GlitchText({ text }) {
@@ -223,10 +222,10 @@ function LicenseModal({ onClose, onVerified }) {
       <div onClick={e => e.stopPropagation()} style={{ background:"#080c10", border:"1px solid #00b4ff", borderRadius:"12px", padding:"36px", maxWidth:"480px", width:"100%", position:"relative" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, height:"2px", background:"linear-gradient(90deg,transparent,#00b4ff,#00ff90,transparent)", borderRadius:"12px 12px 0 0" }} />
         <div style={{ fontSize:"11px", color:"#00b4ff", fontFamily:"'Space Mono',monospace", letterSpacing:"0.2em", marginBottom:"12px" }}>// UNLOCK LIBRARY</div>
-        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:"20px", fontWeight:"900", color:"#e8eaf0", marginBottom:"8px" }}>Enter your license key</div>
-        <div style={{ fontSize:"12px", color:"#556", marginBottom:"24px", lineHeight:1.6 }}>After subscribing on Gumroad, you'll receive a license key by email. Enter it here to unlock your prompts.</div>
-        <input value={key} onChange={e => { setKey(e.target.value); setStatus("idle"); }} onKeyDown={e => e.key==="Enter" && handleVerify()} placeholder="XXXXXXXX-XXXXXXXX-XXXXXXXX-XXXXXXXX" style={{ width:"100%", background:"#030508", border:`1px solid ${status==="error"?"#ff4444":"#1a2030"}`, borderRadius:"4px", padding:"12px 14px", fontFamily:"'Space Mono',monospace", fontSize:"12px", color:"#8899bb", outline:"none", boxSizing:"border-box", marginBottom:"12px" }} />
-        {status==="error" && <div style={{ fontSize:"11px", color:"#ff4444", fontFamily:"'Space Mono',monospace", marginBottom:"12px" }}>✗ Invalid key — check your Gumroad receipt email</div>}
+        <div style={{ fontFamily:"'Syne',sans-serif", fontSize:"20px", fontWeight:"900", color:"#e8eaf0", marginBottom:"8px" }}>Enter your unlock code</div>
+        <div style={{ fontSize:"12px", color:"#556", marginBottom:"24px", lineHeight:1.6 }}>After subscribing on Gumroad, your unlock code is shown on the confirmation page and sent to your email.</div>
+        <input value={key} onChange={e => { setKey(e.target.value); setStatus("idle"); }} onKeyDown={e => e.key==="Enter" && handleVerify()} placeholder="PV-PRO-2026 or PV-ENT-2026" style={{ width:"100%", background:"#030508", border:`1px solid ${status==="error"?"#ff4444":"#1a2030"}`, borderRadius:"4px", padding:"12px 14px", fontFamily:"'Space Mono',monospace", fontSize:"12px", color:"#8899bb", outline:"none", boxSizing:"border-box", marginBottom:"12px" }} />
+        {status==="error" && <div style={{ fontSize:"11px", color:"#ff4444", fontFamily:"'Space Mono',monospace", marginBottom:"12px" }}>✗ Invalid code — check your Gumroad confirmation email</div>}
         <div style={{ display:"flex", gap:"10px" }}>
           <button onClick={handleVerify} disabled={status==="loading"} style={{ flex:1, background:"linear-gradient(135deg,#00b4ff,#00ff90)", border:"none", color:"#030508", padding:"12px", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"12px", fontWeight:"700", cursor:"pointer" }}>{status==="loading"?"VERIFYING...":"UNLOCK ACCESS →"}</button>
           <button onClick={onClose} style={{ padding:"12px 16px", background:"none", border:"1px solid #1e2535", color:"#445", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"11px", cursor:"pointer" }}>CANCEL</button>
@@ -319,7 +318,7 @@ export default function App() {
               <div style={{ fontFamily:"'Syne',sans-serif", fontSize:"11px", letterSpacing:"0.2em", color:"#00b4ff", marginBottom:"4px" }}>// PROMPT LIBRARY</div>
               <div style={{ fontSize:"22px", fontFamily:"'Syne',sans-serif", fontWeight:"800", color:"#e8eaf0" }}>Browse the vault</div>
             </div>
-            {userTier==="free" && <button onClick={() => setShowLicense(true)} style={{ background:"transparent", border:"1px solid #00b4ff", color:"#00b4ff", padding:"8px 16px", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"10px", cursor:"pointer", letterSpacing:"0.05em" }}>🔑 ENTER LICENSE KEY</button>}
+            {userTier==="free" && <button onClick={() => setShowLicense(true)} style={{ background:"transparent", border:"1px solid #00b4ff", color:"#00b4ff", padding:"8px 16px", borderRadius:"4px", fontFamily:"'Space Mono',monospace", fontSize:"10px", cursor:"pointer", letterSpacing:"0.05em" }}>🔑 ENTER UNLOCK CODE</button>}
           </div>
 
           <div style={{ display:"flex", gap:"10px", marginBottom:"24px", flexWrap:"wrap", alignItems:"center" }}>
@@ -362,7 +361,7 @@ export default function App() {
                 <div style={{ marginBottom:"24px" }}><span style={{ fontFamily:"'Syne',sans-serif", fontSize:"40px", fontWeight:"900", color:"#e8eaf0" }}>{plan.price}</span><span style={{ fontSize:"12px", color:"#445" }}>{plan.period}</span></div>
                 <div style={{ marginBottom:"24px" }}>{plan.features.map(f => <div key={f} style={{ display:"flex", gap:"10px", marginBottom:"10px", fontSize:"12px", color:"#6677aa" }}><span style={{ color:plan.color }}>›</span> {f}</div>)}</div>
                 <a href={plan.href} target={plan.href.startsWith("http")?"_blank":"_self"} rel="noopener noreferrer" style={{ display:"block", width:"100%", padding:"12px", background:plan.highlight?"linear-gradient(135deg,#00b4ff,#00ff90)":"transparent", border:plan.highlight?"none":`1px solid ${plan.color}`, color:plan.highlight?"#030508":plan.color, borderRadius:"4px", cursor:"pointer", fontFamily:"'Space Mono',monospace", fontSize:"12px", fontWeight:"700", letterSpacing:"0.05em", textAlign:"center", textDecoration:"none", boxSizing:"border-box" }}>{plan.cta}</a>
-                {plan.name!=="FREE" && <div style={{ marginTop:"10px", textAlign:"center" }}><span onClick={() => setShowLicense(true)} style={{ fontSize:"10px", color:"#334", fontFamily:"'Space Mono',monospace", cursor:"pointer", textDecoration:"underline" }}>Already subscribed? Enter license key</span></div>}
+                {plan.name!=="FREE" && <div style={{ marginTop:"10px", textAlign:"center" }}><span onClick={() => setShowLicense(true)} style={{ fontSize:"10px", color:"#334", fontFamily:"'Space Mono',monospace", cursor:"pointer", textDecoration:"underline" }}>Already subscribed? Enter unlock code</span></div>}
               </div>
             ))}
           </div>
